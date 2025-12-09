@@ -1,0 +1,29 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+  <h2>All Recipes</h2>
+
+  {% if recipes %}
+    <ul>
+      {% for recipe in recipes %}
+        <li>
+          <a href="{% url 'planner:recipe_detail' pk=recipe.pk %}">
+            {{ recipe.name }}
+          </a>
+          {% if recipe.source_note %}
+            <small>({{ recipe.source_note }})</small>
+          {% endif %}
+          – {{ recipe.course_count }} courses,
+          {{ recipe.get_meal_type_display }}
+          |
+          <a href="{% url 'planner:recipe_edit' pk=recipe.pk %}">Edit</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No recipes yet. <a href="{% url 'planner:recipe_create' %}">Create one now</a>.</p>
+  {% endif %}
+
+  <p><a href="{% url 'planner:home' %}">Back to home</a></p>
+{% endblock %}
+

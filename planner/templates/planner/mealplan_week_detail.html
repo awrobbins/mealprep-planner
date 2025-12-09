@@ -1,0 +1,96 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>{{ week.label }}</h2>
+
+<p>
+  {% if week.start_date %}
+    Start date: {{ week.start_date }}<br>
+  {% endif %}
+  Skipped: {{ week.skipped|yesno:"Yes,No" }}
+</p>
+
+<form method="post" action="{% url 'planner:mealplan_week_autobuild' pk=week.pk %}">
+  {% csrf_token %}
+  <button type="submit">Auto-build this week</button>
+</form>
+<!-- Quick Add: Other Items -->
+<h3>Quick Add “Other” Item</h3>
+<form method="post" action="{% url 'planner:planned_meal_create' week_pk=week.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="slot_name" value="Extras">
+  <label for="quick_other_recipe">Select item:</label>
+  <select name="recipe" id="quick_other_recipe">
+    {% for r in recipes %}
+      {% if r.meal_type == "other" %}
+        <option value="{{ r.id }}">{{ r.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <button type="submit">Add Item</button>
+</form>
+<p>
+  <a class="button-link" href="{% url 'planner:planned_meal_create' week_pk=week.pk %}">
+    Add a meal to this week
+  </a>
+</p>
+
+
+<h3>Planned meals</h3>
+
+{% if meals %}
+  <ul>
+    {% for meal in meals %}
+      <li>
+        <strong>{{ meal.slot_name }}:</strong>
+        {% if meal.skipped %}
+          <s>
+            <a href="{% url 'planner:recipe_detail' pk=meal.recipe.pk %}">
+              {{ meal.recipe.name }}
+            </a>
+          </s>
+          (skipped)
+        {% else %}
+          <a href="{% url 'planner:recipe_detail' pk=meal.recipe.pk %}">
+            {{ meal.recipe.name }}
+          </a>
+        {% endif %}
+                <form method="post"
+              action="{% url 'planner:planned_meal_toggle_skip' pk=meal.pk %}"
+              style="display:inline;">
+          {% csrf_token %}
+          {% if meal.skipped %}
+            <button type="submit">Unskip</button>
+          {% else %}
+            <button type="submit">Skip</button>
+          {% endif %}
+        </form>
+
+        <!-- Change / Delete controls -->
+        |
+        <a href="{% url 'planner:planned_meal_edit' pk=meal.pk %}">
+          Change
+        </a>
+
+        <form method="post"
+              action="{% url 'planner:planned_meal_delete' pk=meal.pk %}"
+              style="display:inline; margin-left: 0.25rem;">
+          {% csrf_token %}
+          <button type="submit"
+                  onclick="return confirm('Remove this meal from the week?');">
+            Delete
+          </button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No meals planned yet. Use the "Auto-build this week" button above.</p>
+{% endif %}
+
+<p>
+  <a href="{% url 'planner:mealplan_week_list' %}">Back to weeks</a> |
+  <a href="{% url 'planner:home' %}">Home</a>
+</p>
+{% endblock %}
+

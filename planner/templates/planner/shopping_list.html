@@ -1,0 +1,67 @@
+{% extends "planner/base.html" %}
+{% load planner_extras %}
+
+{% block content %}
+<h2>Shopping List</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <h3>Select weeks to include</h3>
+
+  {% if weeks %}
+    <ul class="week-list">
+      {% for week in weeks %}
+        <li>
+          <label class="inline-label">
+            <input
+              type="checkbox"
+              name="weeks"
+              value="{{ week.id }}"
+              {% if week.id|stringformat:"s" in selected_week_ids %}checked{% endif %}
+            >
+            {{ week.label }}
+            {% if week.start_date %}
+              – starts {{ week.start_date }}
+            {% endif %}
+            {% if week.skipped %}
+              (skipped)
+            {% endif %}
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No weeks created yet. Create a week first in the Meal Plan section.</p>
+  {% endif %}
+
+  <div class="submit-row">
+    <button type="submit">Generate shopping list</button>
+    <button type="submit" formaction="{% url 'planner:shopping_list_pdf' %}">
+      Download as PDF
+    </button>
+  </div>
+</form>
+
+{% if ingredients_by_category %}
+  <h3>Ingredients</h3>
+
+  {% for cat_key, cat_items in ingredients_by_category.items %}
+    {% if cat_items %}
+      <h4>{{ category_labels|get_item:cat_key|default:cat_key|capfirst }}</h4>
+      <ul>
+        {% for item in cat_items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endfor %}
+
+{% elif selected_week_ids %}
+  <p>No ingredients found for the selected weeks. This can happen if all meals are skipped or there are no recipes attached.</p>
+{% endif %}
+
+<p>
+  <a href="{% url 'planner:mealplan_week_list' %}">Back to meal plans</a> |
+  <a href="{% url 'planner:home' %}">Home</a>
+</p>
+{% endblock %}

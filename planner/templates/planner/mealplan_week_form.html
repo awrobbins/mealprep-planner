@@ -1,0 +1,29 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Create Meal Plan Week</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <label for="{{ form.label.id_for_label }}">Label</label>
+  {{ form.label.errors }}
+  {{ form.label }}
+
+  <label for="{{ form.start_date.id_for_label }}">Start date</label>
+  {{ form.start_date.errors }}
+  {{ form.start_date }}
+
+  <label for="{{ form.skipped.id_for_label }}">Skipped?</label>
+  {{ form.skipped.errors }}
+  {{ form.skipped }}
+
+  <div class="submit-row">
+    <button type="submit">Save week</button>
+  </div>
+</form>
+
+<p><a href="{% url 'planner:mealplan_week_list' %}">Back to weeks</a></p>
+{% endblock %}
+

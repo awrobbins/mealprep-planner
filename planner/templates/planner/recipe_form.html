@@ -1,0 +1,110 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>{{ title|default:"Build a Recipe" }}</h2>
+{% if is_edit %}
+  <p>
+    <a href="{% url 'planner:recipe_detail' pk=recipe.pk %}">
+      Cancel and return to this recipe
+    </a>
+  </p>
+{% else %}
+  <p>
+    <a href="{% url 'planner:home' %}">
+      Cancel and go back home
+    </a>
+  </p>
+{% endif %}
+
+
+<form method="post">
+  {% csrf_token %}
+
+  <h3>Recipe details</h3>
+
+  {{ form.non_field_errors }}
+
+  <label for="{{ form.name.id_for_label }}">Name</label>
+  {{ form.name.errors }}
+  {{ form.name }}
+
+  <label for="{{ form.source_note.id_for_label }}">Source (book/page or “online”)</label>
+  {{ form.source_note.errors }}
+  <small>Example: Skinnytaste One &amp; Done p.123, or “Online”.</small><br>
+  {{ form.source_note }}
+
+  <label for="{{ form.course_count.id_for_label }}">Course count</label>
+  {{ form.course_count.errors }}
+  {{ form.course_count }}
+
+  <label for="{{ form.meal_type.id_for_label }}">Meal type</label>
+  {{ form.meal_type.errors }}
+  {{ form.meal_type }}
+
+  <h3>Ingredients</h3>
+
+  {{ formset.non_form_errors }}
+  {{ formset.management_form }}
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Category</th>
+        {% if is_edit %}
+          <th>Delete?</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in formset %}
+        {{ f.id }}  {# important: hidden primary key field #}
+        <tr>
+          <td>
+            {{ f.non_field_errors }}
+            {{ f.name.errors }}
+            {{ f.name }}
+          </td>
+          <td>
+            {{ f.amount.errors }}
+            {{ f.amount }}
+          </td>
+          <td>
+            {{ f.category.errors }}
+            {{ f.category }}
+          </td>
+          {% if is_edit %}
+            <td>
+              {% if f.instance.pk %}
+                {{ f.DELETE }}
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% if is_edit %}
+  <p>
+    <a href="{% url 'planner:recipe_detail' pk=recipe.pk %}">
+      Cancel and return to this recipe
+    </a>
+  </p>
+{% else %}
+  <p>
+    <a href="{% url 'planner:home' %}">
+      Cancel and go back home
+    </a>
+  </p>
+{% endif %}
+
+  <div class="submit-row">
+    <button type="submit">
+      {% if is_edit %}Save changes{% else %}Save recipe{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}
+

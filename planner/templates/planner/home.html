@@ -1,0 +1,20 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+    <h2>{{ greeting }}</h2>
+    <p>What would you like to do today?</p>
+
+    <div class="button-row">
+        <a class="button-link" href="{% url 'planner:recipe_create' %}">Build a Recipe</a>
+        <a class="button-link" href="{% url 'planner:recipe_list' %}">Show All Recipes</a>
+        <!-- Placeholders for upcoming features -->
+        <a class="button-link" href="{% url 'planner:recipe_list' %}">Edit a Recipe</a>
+        <a class="button-link" href="{% url 'planner:mealplan_week_list' %}">
+         Build Meal Plan
+        </a>
+        <a class="button-link" href="{% url 'planner:shopping_list' %}">
+        Generate Shopping List
+        </a>
+    </div>
+{% endblock %}
+

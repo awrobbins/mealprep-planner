@@ -1,0 +1,40 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+  <h2>{{ title|default:"Planned meal" }}</h2>
+
+  <p>
+    Week: <strong>{{ week.label }}</strong>
+    {% if week.start_date %}
+      – starts {{ week.start_date }}
+    {% endif %}
+  </p>
+
+  <p>
+    <a href="{% url 'planner:mealplan_week_detail' pk=week.pk %}">Cancel and return to this week</a>
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <label for="{{ form.slot_name.id_for_label }}">Slot name</label>
+    {{ form.slot_name.errors }}
+    {{ form.slot_name }}
+
+    <label for="{{ form.recipe.id_for_label }}">Recipe</label>
+    {{ form.recipe.errors }}
+    {{ form.recipe }}
+
+    <div class="submit-row">
+      <button type="submit">
+        {% if meal %}Save changes{% else %}Add meal{% endif %}
+      </button>
+    </div>
+  </form>
+
+  <p>
+    <a href="{% url 'planner:mealplan_week_detail' pk=week.pk %}">Back to week</a>
+  </p>
+{% endblock %}
+

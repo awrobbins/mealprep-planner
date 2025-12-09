@@ -1,0 +1,37 @@
+{% extends "planner/base.html" %}
+{% block content %}
+<h2>{{ recipe.name }}</h2>
+{% if recipe.source_note %}
+  <p><small>Source: {{ recipe.source_note }}</small></p>
+{% endif %}
+<p>Courses: {{ recipe.course_count }}</p>
+<p>Meal type: {{ recipe.get_meal_type_display }}</p>
+
+<h3>Ingredients</h3>
+<ul>
+  {% for ingredient in recipe.ingredients.all %}
+    <li>
+      {% if ingredient.amount %}
+        {{ ingredient.amount }} –
+      {% endif %}
+      {{ ingredient.name }} ({{ ingredient.get_category_display }})
+    </li>
+  {% empty %}
+    <li>No ingredients listed yet.</li>
+  {% endfor %}
+</ul>
+
+<p>
+  <a href="{% url 'planner:home' %}">Back to home</a>
+  |
+  <a href="{% url 'planner:recipe_create' %}">Back to Build a Recipe</a>
+  |
+  <a href="{% url 'planner:recipe_edit' pk=recipe.pk %}">Edit this recipe</a>
+  |
+  <a href="{% url 'planner:recipe_pdf' pk=recipe.pk %}">Download PDF</a>
+</p>
+
+
+<p><a href="{% url 'planner:home' %}">Back to home</a></p>
+{% endblock %}
+

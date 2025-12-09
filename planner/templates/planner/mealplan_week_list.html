@@ -1,0 +1,85 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Meal Plan Weeks</h2>
+
+<p>
+  <a class="button-link" href="{% url 'planner:mealplan_week_create' %}">
+    Create a new week
+  </a>
+</p>
+<p>
+  <a href="{% url 'planner:shopping_list' %}">
+    Go to Shopping List Generator
+  </a>
+</p>
+
+
+{% if weeks %}
+  <h3>Active weeks</h3>
+  <ul>
+    {% for week in weeks %}
+      <li>
+        <a href="{% url 'planner:mealplan_week_detail' pk=week.pk %}">
+          {{ week.label }}
+        </a>
+        {% if week.start_date %}
+          – starts {{ week.start_date }}
+        {% endif %}
+        {% if week.skipped %}
+          (skipped)
+        {% endif %}
+
+        <form method="post"
+              action="{% url 'planner:mealplan_week_archive' pk=week.pk %}"
+              style="display:inline; margin-left: 0.5rem;">
+          {% csrf_token %}
+          <button type="submit">Archive</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No weeks yet. Create your first week above.</p>
+{% endif %}
+
+{% if archived_weeks %}
+  <h3>Archived weeks</h3>
+  <ul>
+    {% for week in archived_weeks %}
+      <li>
+        <a href="{% url 'planner:mealplan_week_detail' pk=week.pk %}">
+          {{ week.label }}
+        </a>
+        {% if week.start_date %}
+          – starts {{ week.start_date }}
+        {% endif %}
+        {% if week.skipped %}
+          (skipped)
+        {% endif %}
+        (archived)
+
+        <form method="post"
+              action="{% url 'planner:mealplan_week_unarchive' pk=week.pk %}"
+              style="display:inline; margin-left: 0.5rem;">
+          {% csrf_token %}
+          <button type="submit">Unarchive</button>
+        </form>
+
+        <form method="post"
+              action="{% url 'planner:mealplan_week_delete' pk=week.pk %}"
+              style="display:inline; margin-left: 0.25rem;">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('Delete this week permanently?');">
+            Delete
+          </button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+
+<p><a href="{% url 'planner:home' %}">Back to home</a></p>
+{% endblock %}
+

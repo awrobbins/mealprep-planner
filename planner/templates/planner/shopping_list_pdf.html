@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Shopping List</title>
+    <style>
+    body {
+      font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
+      font-size: 9pt;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 16pt;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 12pt;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+    h3 {
+      font-size: 10pt;
+      margin-top: 8px;
+      margin-bottom: 3px;
+    }
+    ul {
+      padding-left: 14px;
+      margin-top: 1px;
+      margin-bottom: 5px;
+    }
+    li {
+      margin-bottom: 0px;
+    }
+    table.columns {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td.column {
+      width: 50%;
+      vertical-align: top;
+      padding-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shopping List</h1>
+
+  {% if weeks %}
+    <h2>Weeks included</h2>
+    <ul>
+      {% for week in weeks %}
+        <li>
+          {{ week.label }}
+          {% if week.start_date %}
+            – starts {{ week.start_date }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% if ingredients_by_category %}
+    <h2>Ingredients by category</h2>
+
+    {% load planner_extras %}
+
+    <table class="columns">
+      <tr>
+        <!-- LEFT COLUMN: Produce, Protein, Frozen -->
+        <td class="column">
+          {% for cat_key in left_categories %}
+            {% with cat_items=ingredients_by_category|get_item:cat_key %}
+              {% if cat_items %}
+                <h3>{{ category_labels|get_item:cat_key|default:cat_key|capfirst }}</h3>
+                <ul>
+                  {% for item in cat_items %}
+                    <li>{{ item }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        </td>
+
+        <!-- RIGHT COLUMN: Pantry, Dairy, and any other categories -->
+        <td class="column">
+          {% for cat_key in right_categories %}
+            {% with cat_items=ingredients_by_category|get_item:cat_key %}
+              {% if cat_items %}
+                <h3>{{ category_labels|get_item:cat_key|default:cat_key|capfirst }}</h3>
+                <ul>
+                  {% for item in cat_items %}
+                    <li>{{ item }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        </td>
+      </tr>
+    </table>
+  {% else %}
+    <p>No ingredients found for the selected weeks.</p>
+  {% endif %}
+
+</body>
+</html>
+

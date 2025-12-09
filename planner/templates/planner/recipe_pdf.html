@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Recipe – {{ recipe.name }}</title>
+  <style>
+    body {
+      font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
+      font-size: 12pt;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 20pt;
+      margin-bottom: 5px;
+    }
+    h2 {
+      font-size: 14pt;
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    .meta {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ recipe.name }}</h1>
+
+  <div class="meta">
+    <p>Course count: {{ recipe.course_count }}</p>
+    <p>Meal type: {{ recipe.get_meal_type_display }}</p>
+  </div>
+
+  <h2>Ingredients</h2>
+  <ul>
+    {% for ingredient in recipe.ingredients.all %}
+      <li>
+        {% if ingredient.amount %}
+          {{ ingredient.amount }} –
+        {% endif %}
+        {{ ingredient.name }} ({{ ingredient.get_category_display }})
+      </li>
+    {% empty %}
+      <li>No ingredients listed.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
+
