@@ -371,51 +371,76 @@ def shopping_list_pdf(request):
         # PDF export only makes sense from the form submission
         return redirect("planner:shopping_list")
 
+    # Items the user kept checked on the shopping list page
+    raw_items = request.POST.getlist("items")
+
+    # Weeks (used for PDF header and fallback behaviour)
     selected_week_ids = request.POST.getlist("weeks")
-    if not selected_week_ids:
-        # No weeks selected; send back to the normal page
-        return redirect("planner:shopping_list")
-
-    # Fetch only non-skipped weeks
     selected_weeks = MealPlanWeek.objects.filter(
-        pk__in=selected_week_ids,
-        skipped=False,
+        pk__in=selected_week_ids
     ).order_by("start_date", "id")
-
-    # All non-skipped meals in those weeks
-    meals = (
-        PlannedMeal.objects.filter(
-            week__in=selected_weeks,
-            skipped=False,
-        )
-        .select_related("recipe", "week")
-        .prefetch_related("recipe__ingredients")
-    )
 
     ingredients_by_category = {key: [] for key, _ in INGREDIENT_CATEGORIES}
     category_labels = dict(INGREDIENT_CATEGORIES)
-    seen = set()  # avoid exact duplicates
 
-    for meal in meals:
-        for ing in meal.recipe.ingredients.all():
-            cat = ing.category
-            name = ing.name.strip()
-            amount = (ing.amount or "").strip()
-
-            key = (cat, name, amount)
-            if key in seen:
+    if raw_items:
+        # Use the filtered items from the shopping-list page.
+        # Each value is "category_key|||label"
+        for raw in raw_items:
+            try:
+                cat_key, label = raw.split("|||", 1)
+            except ValueError:
+                # Ignore malformed values
                 continue
-            seen.add(key)
 
-            if amount:
-                label = f"{amount} – {name}"
+            if cat_key in ingredients_by_category:
+                ingredients_by_category[cat_key].append(label)
             else:
-                label = name
+                ingredients_by_category.setdefault(cat_key, []).append(label)
+    else:
+        # Fallback: old behavior – recompute from the selected weeks
+        if not selected_week_ids:
+            # No weeks selected; send back to the normal page
+            return redirect("planner:shopping_list")
 
-            if cat in ingredients_by_category:
-                ingredients_by_category[cat].append(label)
-            else:
-                ingredients_by_category.setdefault(cat, []).append(label)
+        # Fetch only non-skipped weeks
+        selected_weeks = MealPlanWeek.objects.filter(
+            pk__in=selected_week_ids,
+            skipped=False,
+        ).order_by("start_date", "id")
+
+        # All non-skipped meals in those weeks
+        meals = (
+            PlannedMeal.objects.filter(
+                week__in=selected_weeks,
+                skipped=False,
+            )
+            .select_related("recipe", "week")
+            .prefetch_related("recipe__ingredients")
+        )
+
+        seen = set()  # avoid exact duplicates
+
+        for meal in meals:
+            for ing in meal.recipe.ingredients.all():
+                cat = ing.category
+                name = ing.name.strip()
+                amount = (ing.amount or "").strip()
+
+                key = (cat, name, amount)
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                if amount:
+                    label = f"{amount} – {name}"
+                else:
+                    label = name
+
+                if cat in ingredients_by_category:
+                    ingredients_by_category[cat].append(label)
+                else:
+                    ingredients_by_category.setdefault(cat, []).append(label)
 
     # Column layout for the PDF:
     # Left side: Produce, Protein, Frozen (your half)
@@ -430,13 +455,6 @@ def shopping_list_pdf(request):
         "left_categories": left_categories,
         "right_categories": right_categories,
     }
-
-
- #   context = {
- #       "weeks": selected_weeks,
- #       "ingredients_by_category": ingredients_by_category,
- #       "category_labels": category_labels,
- #   }
 
     pdf_bytes = render_to_pdf("planner/shopping_list_pdf.html", context)
     if pdf_bytes is None:

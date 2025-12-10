@@ -6,6 +6,7 @@
 
 <form method="post">
   {% csrf_token %}
+
   <h3>Select weeks to include</h3>
 
   {% if weeks %}
@@ -34,6 +35,37 @@
     <p>No weeks created yet. Create a week first in the Meal Plan section.</p>
   {% endif %}
 
+  {% if ingredients_by_category %}
+    <h3>Ingredients (uncheck items you already have)</h3>
+
+    {% load planner_extras %}
+
+    {% for cat_key, cat_items in ingredients_by_category.items %}
+      {% if cat_items %}
+        <h4>{{ category_labels|get_item:cat_key|default:cat_key|capfirst }}</h4>
+        <ul>
+          {% for item in cat_items %}
+            <li>
+              <label class="inline-label">
+                <input
+                  type="checkbox"
+                  name="items"
+                  value="{{ cat_key }}|||{{ item }}"
+                  checked
+                >
+                {{ item }}
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endfor %}
+
+  {% elif selected_week_ids %}
+    <p>No ingredients found for the selected weeks. This can happen if all meals are skipped or there
+are no recipes attached.</p>
+  {% endif %}
+
   <div class="submit-row">
     <button type="submit">Generate shopping list</button>
     <button type="submit" formaction="{% url 'planner:shopping_list_pdf' %}">
@@ -41,24 +73,6 @@
     </button>
   </div>
 </form>
-
-{% if ingredients_by_category %}
-  <h3>Ingredients</h3>
-
-  {% for cat_key, cat_items in ingredients_by_category.items %}
-    {% if cat_items %}
-      <h4>{{ category_labels|get_item:cat_key|default:cat_key|capfirst }}</h4>
-      <ul>
-        {% for item in cat_items %}
-          <li>{{ item }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endfor %}
-
-{% elif selected_week_ids %}
-  <p>No ingredients found for the selected weeks. This can happen if all meals are skipped or there are no recipes attached.</p>
-{% endif %}
 
 <p>
   <a href="{% url 'planner:mealplan_week_list' %}">Back to meal plans</a> |
